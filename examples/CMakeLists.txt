@@ -4,8 +4,8 @@ if (NOT PCAP_LIBRARY)
     message(STATUS "Could not find libpcap - some examples will not be built")
 endif()
 
-add_executable(simplegrep simplegrep.c)
-set_source_files_properties(simplegrep.c PROPERTIES COMPILE_FLAGS
+add_executable(simplegrep simplegrep.cc)
+set_source_files_properties(simplegrep.cc PROPERTIES COMPILE_FLAGS
     "-Wall -Wno-unused-parameter")
 target_link_libraries(simplegrep hs)
 

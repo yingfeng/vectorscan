@@ -48,7 +48,6 @@ sqlite3
 src/config.h
 src/config.h.in
 src/hs_version.h
-src/parser/Parser.cpp
 
 # Generated PCRE files
 pcre/pcre_chartables.c
@@ -99,3 +98,6 @@ pcre/pcre_stringpiece.h
 pcre/pcrecpparg.h
 pcre/stamp-h1
 pcre/test-driver
+
+.vscode/
+build

@@ -209,26 +209,6 @@ if (NOT CORRECT_PCRE_VERSION)
     message(STATUS "PCRE ${PCRE_REQUIRED_VERSION} or above not found")
 endif()
 
-# we need static libs for Chimera - too much deep magic for shared libs
-if (CORRECT_PCRE_VERSION AND PCRE_BUILD_SOURCE AND BUILD_STATIC_LIBS)
-    set(BUILD_CHIMERA TRUE)
-endif()
-
-set(RAGEL_C_FLAGS "-Wno-unused -funsigned-char")
-
-set_source_files_properties(
-    src/parser/Parser.cpp
-    PROPERTIES
-        COMPILE_FLAGS "${RAGEL_C_FLAGS}")
-
-ragelmaker(src/parser/Parser.rl)
-
-set_source_files_properties(
-   src/parser/control_verbs.cpp
-    PROPERTIES
-        COMPILE_FLAGS "${RAGEL_C_FLAGS}")
-
-ragelmaker(src/parser/control_verbs.rl)
 
 # do substitutions
 configure_file(${CMAKE_MODULE_PATH}/config.h.in ${PROJECT_BINARY_DIR}/config.h)
@@ -1251,67 +1231,6 @@ if (BUILD_SHARED_LIBS)
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
-if (BUILD_STATIC_LIBS)
-    add_dependencies(hs ragel_Parser)
-endif ()
-
-if (BUILD_STATIC_LIBS)
-    install(TARGETS hs DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif()
-
-if (BUILD_SHARED_LIBS)
-    set(hs_shared_SRCS
-        src/hs_version.c
-        src/hs_valid_platform.c
-        $<TARGET_OBJECTS:hs_compile_shared>)
-
-    if (NOT FAT_RUNTIME)
-        set(hs_shared_SRCS
-            ${hs_shared_SRCS}
-            $<TARGET_OBJECTS:hs_exec_shared>)
-    else ()
-        set(hs_shared_SRCS
-            ${hs_shared_SRCS}
-            $<TARGET_OBJECTS:hs_exec_common_shared>
-            ${RUNTIME_SHLIBS})
-    endif ()
-
-    add_library(hs_shared SHARED ${hs_shared_SRCS} hs.def)
-
-    add_dependencies(hs_shared ragel_Parser)
-    set_target_properties(hs_shared PROPERTIES
-        OUTPUT_NAME hs
-        VERSION ${LIB_VERSION}
-        SOVERSION ${LIB_SOVERSION}
-        MACOSX_RPATH ON)
-
-    install(TARGETS hs_shared
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif()
-
-# used by tools and other targets
-if (NOT BUILD_STATIC_LIBS)
-    # use shared lib without having to change all the targets
-    add_library(hs ALIAS hs_shared)
-endif ()
-
-add_subdirectory(util)
-
-option(BUILD_UNIT "Build Hyperscan unit tests (default TRUE)" TRUE)
-if(BUILD_UNIT)
-    add_subdirectory(unit)
-endif()
-
-option(BUILD_TOOLS "Build Hyperscan tools (default TRUE)" TRUE)
-if(EXISTS ${CMAKE_SOURCE_DIR}/tools/CMakeLists.txt AND BUILD_TOOLS)
-    add_subdirectory(tools)
-endif()
-
-if (EXISTS ${CMAKE_SOURCE_DIR}/chimera/CMakeLists.txt AND BUILD_CHIMERA)
-    add_subdirectory(chimera)
-endif()
 
 option(BUILD_EXAMPLES "Build Hyperscan example code (default TRUE)" TRUE)
 if(BUILD_EXAMPLES)
@@ -1323,7 +1242,3 @@ if(BUILD_BENCHMARKS)
     add_subdirectory(benchmarks)
 endif()
 
-option(BUILD_DOC "Build the Hyperscan documentation (default TRUE)" TRUE)
-if(BUILD_DOC)
-    add_subdirectory(doc/dev-reference)
-endif()
